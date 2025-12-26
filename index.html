@@ -333,6 +333,54 @@
 
         document.body.className = localStorage.getItem('scTheme') || 'light-theme';
         document.getElementById('calendarInput').value = selectedDate;
+
+        function updateUI() {
+    const dayData = allData[selectedDate] || { budget: 0, items: [] };
+    const h = document.getElementById('history');
+    h.innerHTML = dayData.items.length ? '' : `<div style="text-align:center; margin-top:60px; opacity:0.3;">No expenses recorded today.</div>`;
+    
+    let totalSpent = 0;
+    dayData.items.forEach((item, index) => {
+        totalSpent += parseFloat(item.amt);
+        h.innerHTML += `
+            <div class="item">
+                <div class="item-info">
+                    <span style="font-weight:600; font-size:16px;">${item.where}</span>
+                    <span style="font-size:14px; color:var(--danger); font-weight:700;">₹${item.amt}</span>
+                </div>
+                <div class="menu-btn" onclick="showMenu(event, ${index})">⋮</div>
+            </div>`;
+    });
+
+    const budget = dayData.budget || 0;
+    const savings = budget - totalSpent;
+    
+    // Update Stats
+    document.getElementById('statBudget').innerText = '₹' + budget;
+    document.getElementById('statSpent').innerText = '₹' + totalSpent;
+    document.getElementById('statSaving').innerText = '₹' + savings;
+    document.getElementById('statSaving').style.color = savings >= 0 ? 'var(--accent)' : 'var(--danger)';
+
+    // NEW: Update Progress Bar
+    const progBar = document.getElementById('progressBar');
+    const percentage = budget > 0 ? Math.min((totalSpent / budget) * 100, 100) : 0;
+    progBar.style.width = percentage + '%';
+    progBar.style.background = percentage > 90 ? 'var(--danger)' : 'var(--accent)';
+
+    // NEW: Calculate Monthly Total
+    const currentMonth = selectedDate.substring(0, 7); // Gets "YYYY-MM"
+    let mTotal = 0;
+    for (let date in allData) {
+        if (date.startsWith(currentMonth)) {
+            allData[date].items.forEach(i => mTotal += parseFloat(i.amt));
+        }
+    }
+    document.getElementById('monthTotal').innerText = 'Total: ₹' + mTotal;
+    
+    document.getElementById('dateText').innerText = new Date(selectedDate).toLocaleDateString(undefined, {day:'numeric', month:'short'});
+    document.getElementById('calendarInput').value = selectedDate;
+    localStorage.setItem('swiftCoinV3', JSON.stringify(allData));
+}
     </script>
 </body>
 </html>
