@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SwiftCoin - Budget Master</title>
+    <style>
+        :root { 
+            --bg: #f9f9f9; 
+            --text: #2d3436; 
+            --card: #ffffff; 
+            --accent: #00b894; 
+            --warn: #fdcb6e; 
+            --danger: #ff7675; 
+        }
+        body.dark-theme { 
+            --bg: #1e272e; 
+            --text: #f1f2f6; 
+            --card: #2f3542; 
+        }
+        
+        * { box-sizing: border-box; font-family: 'Segoe UI', system-ui, sans-serif; transition: 0.2s; }
+        body { margin: 0; padding: 0; height: 100vh; display: flex; flex-direction: column; color: var(--text); background: var(--bg); overflow: hidden; }
+        
+        /* SPLASH SCREEN */
+        #splash-screen { position: fixed; inset: 0; background: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 9999; }
+        body.dark-theme #splash-screen { background: #1e272e; }
+        .loader-circle { width: 80px; height: 80px; border: 4px solid rgba(0,184,148,0.1); border-top: 4px solid var(--accent); border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        /* CENTERED HEADER */
+        .header { 
+            padding: 15px 20px; 
+            background: var(--card); 
+            display: grid; 
+            grid-template-columns: 100px 1fr 100px; /* Forces center column to be true center */
+            align-items: center; 
+            border-bottom: 1px solid rgba(0,0,0,0.05); 
+        }
+        .header-title { font-weight: 800; font-size: 18px; white-space: nowrap; }
+        
+        /* CENTERED DATE BUTTON */
+        .date-container { display: flex; justify-content: center; align-items: center; position: relative; }
+        #dateDisplay { 
+            font-weight: 700; 
+            color: var(--accent); 
+            cursor: pointer; 
+            background: rgba(0,184,148,0.1); 
+            padding: 6px 15px; 
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            z-index: 5;
+        }
+
+        /* INVISIBLE CALENDAR ANCHOR AT SCREEN CENTER */
+        #calendarInput {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 1px;
+            height: 1px;
+            opacity: 0;
+            pointer-events: none;
+            border: none;
+        }
+
+        /* STATS */
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; padding: 15px; background: var(--card); border-bottom: 1px solid rgba(0,0,0,0.05); text-align: center; }
+        .stat-box { padding: 10px; border-radius: 12px; background: var(--bg); cursor: default; }
+        .clickable-stat { cursor: pointer; border: 1px solid transparent; }
+        .clickable-stat:active { border-color: var(--accent); background: rgba(0,184,148,0.05); }
+        .stat-label { font-size: 10px; text-transform: uppercase; font-weight: 800; opacity: 0.6; margin-bottom: 4px; }
+        .stat-val { font-size: 16px; font-weight: 900; }
+
+        /* LIST ITEMS */
+        .history-container { flex: 1; overflow-y: auto; padding: 15px 15px 100px 15px; }
+        .item { background: var(--card); padding: 18px; border-radius: 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 8px rgba(0,0,0,0.05); position: relative; }
+        .item-info { display: flex; flex-direction: column; }
+        .menu-btn { font-size: 22px; cursor: pointer; padding: 5px 10px; opacity: 0.5; font-weight: bold; }
+        
+        /* CONTEXT MENU */
+        .context-menu { display: none; position: absolute; background: var(--card); box-shadow: 0 10px 25px rgba(0,0,0,0.2); border-radius: 12px; z-index: 2000; overflow: hidden; min-width: 140px; border: 1px solid rgba(0,0,0,0.05); }
+        .menu-item { padding: 12px 16px; font-size: 14px; cursor: pointer; display: flex; align-items: center; gap: 10px; color: var(--text); }
+        .menu-item:hover { background: rgba(0,0,0,0.05); }
+        .menu-item.delete { color: var(--danger); border-top: 1px solid rgba(0,0,0,0.05); }
+
+        /* MODALS */
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); align-items: center; justify-content: center; z-index: 1000; padding: 20px; backdrop-filter: blur(5px); }
+        .modal-content { background: var(--card); color: var(--text); padding: 25px; border-radius: 25px; width: 100%; max-width: 350px; position: relative; }
+        .close-x { position: absolute; top: 15px; right: 20px; font-size: 24px; font-weight: bold; opacity: 0.4; cursor: pointer; }
+        
+        input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 12px; font-size: 16px; outline: none; background: var(--bg); color: var(--text); }
+        .btn { width: 100%; padding: 12px; border-radius: 12px; border: none; font-weight: 700; cursor: pointer; margin-top: 8px; }
+        .save-btn { background: var(--accent); color: white; }
+        
+        .bottom-bar { position: fixed; bottom: 0; width: 100%; background: var(--card); padding: 15px 25px; display: flex; justify-content: center; align-items: center; border-top: 1px solid rgba(0,0,0,0.05); }
+        .add-btn { background: var(--accent); color: white; border: none; width: 55px; height: 55px; border-radius: 18px; font-size: 30px; cursor: pointer; box-shadow: 0 4px 12px rgba(0,184,148,0.3); }
+    </style>
+</head>
+<body class="light-theme">
+
+    <div id="splash-screen">
+        <div class="loader-circle"></div>
+        <h2 style="color:var(--accent); margin-top:20px;">SwiftCoin</h2>
+    </div>
+
+    <div class="header">
+        <div class="header-title">SwiftCoin</div>
+        <div class="date-container">
+            <div id="dateDisplay" onclick="openCalendar()">
+                📅 <span id="dateText">-- ---</span>
+            </div>
+            <input type="date" id="calendarInput" onchange="handleDateChange(this.value)">
+        </div>
+        <div style="text-align: right;">
+            <span onclick="toggleModal('settingsModal')" style="font-size:22px; cursor:pointer; opacity:0.7;">⚙️</span>
+        </div>
+    </div>
+
+    <div class="stats-grid">
+        <div class="stat-box clickable-stat" onclick="openBudgetEdit()">
+            <div class="stat-label">Budget ✏️</div>
+            <div id="statBudget" class="stat-val" style="color:var(--accent)">₹0</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-label">Spent</div>
+            <div id="statSpent" class="stat-val" style="color:var(--danger)">₹0</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-label">Saving</div>
+            <div id="statSaving" class="stat-val">₹0</div>
+        </div>
+    </div>
+
+    <div class="history-container" id="history"></div>
+
+    <div id="itemMenu" class="context-menu">
+        <div class="menu-item" onclick="prepareEdit()">✏️ Modify</div>
+        <div class="menu-item delete" onclick="confirmDelete()">🗑️ Delete</div>
+    </div>
+
+    <div class="bottom-bar">
+        <button class="add-btn" onclick="toggleModal('addModal')">+</button>
+    </div>
+
+    <div id="budgetModal" class="modal">
+        <div class="modal-content">
+            <div class="close-x" onclick="closeModals()">×</div>
+            <h3 id="budgetModalTitle" style="margin-top:0;">Daily Budget 🎯</h3>
+            <p style="font-size:14px; opacity:0.7;">Set your spending limit for today.</p>
+            <input type="number" id="budgetInput" placeholder="Amount (e.g. 1000)" inputmode="decimal">
+            <button class="btn save-btn" onclick="saveDailyBudget()">Save Budget</button>
+        </div>
+    </div>
+
+    <div id="addModal" class="modal">
+        <div class="modal-content">
+            <div class="close-x" onclick="closeModals()">×</div>
+            <h3 id="modalTitle" style="margin:0 0 15px 0">New Expense 💸</h3>
+            <input type="text" id="whereIn" placeholder="What for?">
+            <input type="number" id="amtIn" placeholder="Amount" inputmode="decimal">
+            <button class="btn save-btn" id="saveActionBtn" onclick="addNew()">Add Expense</button>
+        </div>
+    </div>
+
+    <div id="settingsModal" class="modal">
+        <div class="modal-content">
+            <div class="close-x" onclick="closeModals()">×</div>
+            <h3>Settings</h3>
+            <button class="btn" onclick="setTheme('light-theme')">☀️ Light Mode</button>
+            <button class="btn" style="background:#333; color:#fff;" onclick="setTheme('dark-theme')">🌙 Dark Mode</button>
+            <button class="btn" style="color:red; background:rgba(255,0,0,0.1);" onclick="clearAllData()">⚠️ Clear All Data</button>
+        </div>
+    </div>
+
+    <script>
+        let allData = JSON.parse(localStorage.getItem('swiftCoinV3')) || {};
+        let selectedDate = new Date().toISOString().split('T')[0];
+        let currentManagingIndex = null;
+
+        window.addEventListener('load', () => {
+            setTimeout(() => { 
+                document.getElementById('splash-screen').style.display = 'none'; 
+                checkBudget(); 
+            }, 1200);
+        });
+
+        // Open calendar by triggering hidden input
+        function openCalendar() {
+            const cal = document.getElementById('calendarInput');
+            if (cal.showPicker) cal.showPicker();
+            else cal.click();
+        }
+
+        function checkBudget() {
+            if (!allData[selectedDate] || allData[selectedDate].budget === undefined) {
+                document.getElementById('budgetModalTitle').innerText = "Daily Budget 🎯";
+                toggleModal('budgetModal');
+            } else {
+                updateUI();
+            }
+        }
+
+        function openBudgetEdit() {
+            const currentBudget = allData[selectedDate] ? allData[selectedDate].budget : 0;
+            document.getElementById('budgetModalTitle').innerText = "Edit Budget ✏️";
+            document.getElementById('budgetInput').value = currentBudget;
+            toggleModal('budgetModal');
+        }
+
+        function saveDailyBudget() {
+            const val = document.getElementById('budgetInput').value;
+            if (val !== "") {
+                if (!allData[selectedDate]) allData[selectedDate] = { budget: 0, items: [] };
+                allData[selectedDate].budget = parseFloat(val);
+                closeModals();
+                updateUI();
+                document.getElementById('budgetInput').value = '';
+            }
+        }
+
+        function updateUI() {
+            const dayData = allData[selectedDate] || { budget: 0, items: [] };
+            const h = document.getElementById('history');
+            h.innerHTML = dayData.items.length ? '' : `<div style="text-align:center; margin-top:60px; opacity:0.3;">No expenses recorded today.</div>`;
+            
+            let totalSpent = 0;
+            dayData.items.forEach((item, index) => {
+                totalSpent += parseFloat(item.amt);
+                h.innerHTML += `
+                    <div class="item">
+                        <div class="item-info">
+                            <span style="font-weight:600; font-size:16px;">${item.where}</span>
+                            <span style="font-size:14px; color:var(--danger); font-weight:700;">₹${item.amt}</span>
+                        </div>
+                        <div class="menu-btn" onclick="showMenu(event, ${index})">⋮</div>
+                    </div>`;
+            });
+
+            const savings = (dayData.budget || 0) - totalSpent;
+            document.getElementById('statBudget').innerText = '₹' + (dayData.budget || 0);
+            document.getElementById('statSpent').innerText = '₹' + totalSpent;
+            document.getElementById('statSaving').innerText = '₹' + savings;
+            document.getElementById('statSaving').style.color = savings >= 0 ? 'var(--accent)' : 'var(--danger)';
+            
+            document.getElementById('dateText').innerText = new Date(selectedDate).toLocaleDateString(undefined, {day:'numeric', month:'short'});
+            document.getElementById('calendarInput').value = selectedDate;
+            localStorage.setItem('swiftCoinV3', JSON.stringify(allData));
+        }
+
+        function addNew() {
+            const w = document.getElementById('whereIn').value;
+            const a = document.getElementById('amtIn').value;
+            if(w && a) {
+                if (!allData[selectedDate]) allData[selectedDate] = { budget: 0, items: [] };
+                allData[selectedDate].items.unshift({ where: w, amt: parseFloat(a) });
+                updateUI();
+                closeModals();
+                resetAddModal();
+            }
+        }
+
+        function showMenu(e, index) {
+            e.stopPropagation();
+            currentManagingIndex = index;
+            const menu = document.getElementById('itemMenu');
+            menu.style.display = 'block';
+            menu.style.top = e.pageY + "px";
+            menu.style.left = (e.pageX - 120) + "px";
+        }
+
+        function confirmDelete() {
+            if(confirm("Permanently delete this item?")) {
+                allData[selectedDate].items.splice(currentManagingIndex, 1);
+                updateUI();
+            }
+        }
+
+        function prepareEdit() {
+            const item = allData[selectedDate].items[currentManagingIndex];
+            document.getElementById('modalTitle').innerText = "Edit Expense ✏️";
+            document.getElementById('saveActionBtn').innerText = "Update Expense";
+            document.getElementById('whereIn').value = item.where;
+            document.getElementById('amtIn').value = item.amt;
+            allData[selectedDate].items.splice(currentManagingIndex, 1);
+            toggleModal('addModal');
+        }
+
+        function resetAddModal() {
+            document.getElementById('modalTitle').innerText = "New Expense 💸";
+            document.getElementById('saveActionBtn').innerText = "Add Expense";
+            document.getElementById('whereIn').value = ''; 
+            document.getElementById('amtIn').value = '';
+        }
+
+        function handleDateChange(val) {
+            selectedDate = val;
+            checkBudget();
+        }
+
+        function toggleModal(id) { 
+            if(id === 'addModal') resetAddModal();
+            document.getElementById(id).style.display = 'flex'; 
+        }
+        
+        function closeModals() { 
+            document.querySelectorAll('.modal').forEach(m => m.style.display = 'none'); 
+        }
+
+        window.onclick = function(event) {
+            document.getElementById('itemMenu').style.display = 'none';
+            if (event.target.classList.contains('modal')) closeModals();
+        }
+
+        function setTheme(n) { document.body.className = n; localStorage.setItem('scTheme', n); }
+        function clearAllData() { if(confirm("Erase all history?")) { localStorage.clear(); location.reload(); } }
+
+        document.body.className = localStorage.getItem('scTheme') || 'light-theme';
+        document.getElementById('calendarInput').value = selectedDate;
+    </script>
+</body>
+</html>
