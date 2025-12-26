@@ -28,18 +28,17 @@
         .loader-circle { width: 80px; height: 80px; border: 4px solid rgba(0,184,148,0.1); border-top: 4px solid var(--accent); border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { 100% { transform: rotate(360deg); } }
 
-        /* CENTERED HEADER */
+        /* HEADER */
         .header { 
             padding: 15px 20px; 
             background: var(--card); 
             display: grid; 
-            grid-template-columns: 100px 1fr 100px; /* Forces center column to be true center */
+            grid-template-columns: 100px 1fr 100px; 
             align-items: center; 
             border-bottom: 1px solid rgba(0,0,0,0.05); 
         }
         .header-title { font-weight: 800; font-size: 18px; white-space: nowrap; }
         
-        /* CENTERED DATE BUTTON */
         .date-container { display: flex; justify-content: center; align-items: center; position: relative; }
         #dateDisplay { 
             font-weight: 700; 
@@ -54,7 +53,6 @@
             z-index: 5;
         }
 
-        /* INVISIBLE CALENDAR ANCHOR AT SCREEN CENTER */
         #calendarInput {
             position: fixed;
             top: 50%;
@@ -68,12 +66,17 @@
         }
 
         /* STATS */
-        .stats-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; padding: 15px; background: var(--card); border-bottom: 1px solid rgba(0,0,0,0.05); text-align: center; }
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; padding: 15px; background: var(--card); text-align: center; }
         .stat-box { padding: 10px; border-radius: 12px; background: var(--bg); cursor: default; }
         .clickable-stat { cursor: pointer; border: 1px solid transparent; }
         .clickable-stat:active { border-color: var(--accent); background: rgba(0,184,148,0.05); }
         .stat-label { font-size: 10px; text-transform: uppercase; font-weight: 800; opacity: 0.6; margin-bottom: 4px; }
         .stat-val { font-size: 16px; font-weight: 900; }
+
+        /* NEW FEATURES STYLES */
+        .progress-container { margin: 0 15px 10px; background: rgba(0,0,0,0.05); height: 8px; border-radius: 10px; overflow: hidden; }
+        #progressBar { height: 100%; background: var(--accent); width: 0%; transition: 0.5s width ease-in-out; }
+        .month-summary { padding: 5px 20px 15px; font-size: 12px; font-weight: 800; opacity: 0.6; display: flex; justify-content: space-between; background: var(--card); border-bottom: 1px solid rgba(0,0,0,0.05); text-transform: uppercase; }
 
         /* LIST ITEMS */
         .history-container { flex: 1; overflow-y: auto; padding: 15px 15px 100px 15px; }
@@ -98,12 +101,6 @@
         
         .bottom-bar { position: fixed; bottom: 0; width: 100%; background: var(--card); padding: 15px 25px; display: flex; justify-content: center; align-items: center; border-top: 1px solid rgba(0,0,0,0.05); }
         .add-btn { background: var(--accent); color: white; border: none; width: 55px; height: 55px; border-radius: 18px; font-size: 30px; cursor: pointer; box-shadow: 0 4px 12px rgba(0,184,148,0.3); }
-  /* Progress Bar Styles */
-.progress-container { margin: 0 15px 15px; background: rgba(0,0,0,0.05); height: 8px; border-radius: 10px; overflow: hidden; }
-#progressBar { height: 100%; background: var(--accent); width: 0%; transition: 0.5s width ease-in-out; }
-
-/* Monthly Summary Style */
-.month-summary { padding: 10px 15px; font-size: 13px; font-weight: 600; opacity: 0.7; display: flex; justify-content: space-between; }
     </style>
 </head>
 <body class="light-theme">
@@ -139,6 +136,16 @@
             <div class="stat-label">Saving</div>
             <div id="statSaving" class="stat-val">₹0</div>
         </div>
+    </div>
+
+    <div style="background: var(--card);">
+        <div class="progress-container">
+            <div id="progressBar"></div>
+        </div>
+    </div>
+    <div class="month-summary">
+        <span>This Month</span>
+        <span id="monthTotal">Total: ₹0</span>
     </div>
 
     <div class="history-container" id="history"></div>
@@ -179,14 +186,7 @@
             <button class="btn" onclick="setTheme('light-theme')">☀️ Light Mode</button>
             <button class="btn" style="background:#333; color:#fff;" onclick="setTheme('dark-theme')">🌙 Dark Mode</button>
             <button class="btn" style="color:red; background:rgba(255,0,0,0.1);" onclick="clearAllData()">⚠️ Clear All Data</button>
-      
-            <div class="progress-container">
-    <div id="progressBar"></div>
-</div>
-<div class="month-summary">
-    <span>THIS MONTH</span>
-    <span id="monthTotal">₹0</span>
-</div>
+        </div>
     </div>
 
     <script>
@@ -201,7 +201,6 @@
             }, 1200);
         });
 
-        // Open calendar by triggering hidden input
         function openCalendar() {
             const cal = document.getElementById('calendarInput');
             if (cal.showPicker) cal.showPicker();
@@ -253,11 +252,30 @@
                     </div>`;
             });
 
-            const savings = (dayData.budget || 0) - totalSpent;
-            document.getElementById('statBudget').innerText = '₹' + (dayData.budget || 0);
+            const budget = dayData.budget || 0;
+            const savings = budget - totalSpent;
+
+            // Update Primary Stats
+            document.getElementById('statBudget').innerText = '₹' + budget;
             document.getElementById('statSpent').innerText = '₹' + totalSpent;
             document.getElementById('statSaving').innerText = '₹' + savings;
             document.getElementById('statSaving').style.color = savings >= 0 ? 'var(--accent)' : 'var(--danger)';
+
+            // Update Progress Bar
+            const progBar = document.getElementById('progressBar');
+            const percentage = budget > 0 ? Math.min((totalSpent / budget) * 100, 100) : 0;
+            progBar.style.width = percentage + '%';
+            progBar.style.background = percentage > 90 ? 'var(--danger)' : 'var(--accent)';
+
+            // Calculate Monthly Total
+            const currentMonth = selectedDate.substring(0, 7); 
+            let mTotal = 0;
+            for (let date in allData) {
+                if (date.startsWith(currentMonth)) {
+                    allData[date].items.forEach(i => mTotal += parseFloat(i.amt));
+                }
+            }
+            document.getElementById('monthTotal').innerText = 'Total: ₹' + mTotal;
             
             document.getElementById('dateText').innerText = new Date(selectedDate).toLocaleDateString(undefined, {day:'numeric', month:'short'});
             document.getElementById('calendarInput').value = selectedDate;
@@ -333,54 +351,6 @@
 
         document.body.className = localStorage.getItem('scTheme') || 'light-theme';
         document.getElementById('calendarInput').value = selectedDate;
-
-        function updateUI() {
-    const dayData = allData[selectedDate] || { budget: 0, items: [] };
-    const h = document.getElementById('history');
-    h.innerHTML = dayData.items.length ? '' : `<div style="text-align:center; margin-top:60px; opacity:0.3;">No expenses recorded today.</div>`;
-    
-    let totalSpent = 0;
-    dayData.items.forEach((item, index) => {
-        totalSpent += parseFloat(item.amt);
-        h.innerHTML += `
-            <div class="item">
-                <div class="item-info">
-                    <span style="font-weight:600; font-size:16px;">${item.where}</span>
-                    <span style="font-size:14px; color:var(--danger); font-weight:700;">₹${item.amt}</span>
-                </div>
-                <div class="menu-btn" onclick="showMenu(event, ${index})">⋮</div>
-            </div>`;
-    });
-
-    const budget = dayData.budget || 0;
-    const savings = budget - totalSpent;
-    
-    // Update Stats
-    document.getElementById('statBudget').innerText = '₹' + budget;
-    document.getElementById('statSpent').innerText = '₹' + totalSpent;
-    document.getElementById('statSaving').innerText = '₹' + savings;
-    document.getElementById('statSaving').style.color = savings >= 0 ? 'var(--accent)' : 'var(--danger)';
-
-    // NEW: Update Progress Bar
-    const progBar = document.getElementById('progressBar');
-    const percentage = budget > 0 ? Math.min((totalSpent / budget) * 100, 100) : 0;
-    progBar.style.width = percentage + '%';
-    progBar.style.background = percentage > 90 ? 'var(--danger)' : 'var(--accent)';
-
-    // NEW: Calculate Monthly Total
-    const currentMonth = selectedDate.substring(0, 7); // Gets "YYYY-MM"
-    let mTotal = 0;
-    for (let date in allData) {
-        if (date.startsWith(currentMonth)) {
-            allData[date].items.forEach(i => mTotal += parseFloat(i.amt));
-        }
-    }
-    document.getElementById('monthTotal').innerText = 'Total: ₹' + mTotal;
-    
-    document.getElementById('dateText').innerText = new Date(selectedDate).toLocaleDateString(undefined, {day:'numeric', month:'short'});
-    document.getElementById('calendarInput').value = selectedDate;
-    localStorage.setItem('swiftCoinV3', JSON.stringify(allData));
-}
     </script>
 </body>
 </html>
