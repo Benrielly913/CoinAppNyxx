@@ -17,35 +17,38 @@
             --bg: #1e272e; --text: #f1f2f6; --card: #2f3542; --overlay: rgba(47, 53, 66, 0.9);
         }
         
-        * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
-        body { 
-            margin: 0; height: 100vh; color: var(--text); background: var(--bg); 
-            background-size: cover; background-position: center; background-attachment: fixed;
-        }
+        * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; transition: 0.2s; }
+        body { margin: 0; height: 100vh; color: var(--text); background: var(--bg); background-size: cover; background-position: center; background-attachment: fixed; overflow: hidden; }
 
         /* SCREEN MANAGEMENT */
         .page { display: none; height: 100vh; flex-direction: column; position: absolute; width: 100%; top: 0; left: 0; }
         .page.active { display: flex; }
-        .content-area { flex: 1; overflow-y: auto; padding: 20px; background: var(--overlay); }
+        .content-area { flex: 1; overflow-y: auto; padding: 15px; background: var(--overlay); }
 
         /* HEADER */
-        .nav-header { padding: 15px 20px; background: var(--card); display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(0,0,0,0.1); }
+        .nav-header { padding: 15px 20px; background: var(--card); display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(0,0,0,0.1); z-index: 10; }
         .title { font-weight: 800; font-size: 20px; }
 
-        /* SETTINGS STYLING */
-        .settings-group { background: var(--card); border-radius: 15px; margin-bottom: 20px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        /* STATS & PROGRESS (Restored) */
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 15px; text-align: center; }
+        .stat-box { background: var(--card); padding: 12px; border-radius: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .stat-label { font-size: 10px; font-weight: 800; opacity: 0.6; text-transform: uppercase; }
+        .stat-val { font-size: 15px; font-weight: 900; margin-top: 4px; }
+        
+        .progress-container { background: rgba(0,0,0,0.1); height: 8px; border-radius: 10px; overflow: hidden; margin-bottom: 20px; }
+        #progressBar { height: 100%; background: var(--accent); width: 0%; transition: 0.5s width ease; }
+
+        /* SETTINGS ITEMS */
+        .settings-group { background: var(--card); border-radius: 15px; margin-bottom: 20px; overflow: hidden; }
         .settings-item { padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(0,0,0,0.05); }
-        .settings-item:last-child { border: 0; }
         .section-label { font-size: 12px; font-weight: 700; color: var(--accent); margin: 10px 0 5px 10px; text-transform: uppercase; }
 
         /* BUTTONS */
-        .btn { padding: 10px 15px; border-radius: 10px; border: none; font-weight: 600; cursor: pointer; font-size: 14px; }
+        .btn { padding: 8px 15px; border-radius: 8px; border: none; font-weight: 600; cursor: pointer; }
         .btn-outline { background: transparent; border: 1px solid var(--accent); color: var(--accent); }
-        .btn-danger { background: rgba(255,118,117,0.1); color: var(--danger); }
-        .add-fab { position: fixed; bottom: 30px; right: 30px; width: 60px; height: 60px; border-radius: 50%; background: var(--accent); color: white; border: none; font-size: 30px; box-shadow: 0 10px 20px rgba(0,184,148,0.3); }
+        .add-fab { position: fixed; bottom: 25px; right: 25px; width: 60px; height: 60px; border-radius: 20px; background: var(--accent); color: white; border: none; font-size: 30px; box-shadow: 0 8px 15px rgba(0,184,148,0.3); z-index: 100; }
 
-        /* LIST ITEMS */
-        .expense-card { background: var(--card); padding: 15px; border-radius: 12px; margin-bottom: 10px; display: flex; justify-content: space-between; }
+        .expense-card { background: var(--card); padding: 15px; border-radius: 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
     </style>
 </head>
 <body class="light-theme">
@@ -53,9 +56,27 @@
     <div id="mainPage" class="page active">
         <div class="nav-header">
             <span class="title">SwiftCoin</span>
-            <span style="cursor:pointer" onclick="showPage('settingsPage')">⚙️ Settings</span>
+            <span style="cursor:pointer; font-weight: 600;" onclick="showPage('settingsPage')">⚙️ Settings</span>
         </div>
-        <div class="content-area" id="mainContent">
+        
+        <div class="content-area">
+            <div class="stats-grid">
+                <div class="stat-box" onclick="editBudget()">
+                    <div class="stat-label">Budget ✏️</div>
+                    <div id="statBudget" class="stat-val" style="color:var(--accent)">₹0</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">Spent</div>
+                    <div id="statSpent" class="stat-val" style="color:var(--danger)">₹0</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">Saved</div>
+                    <div id="statSaving" class="stat-val">₹0</div>
+                </div>
+            </div>
+
+            <div class="progress-container"><div id="progressBar"></div></div>
+
             <div id="history"></div>
         </div>
         <button class="add-fab" onclick="addExpense()">+</button>
@@ -63,7 +84,7 @@
 
     <div id="settingsPage" class="page">
         <div class="nav-header">
-            <span style="cursor:pointer" onclick="showPage('mainPage')">⬅️ Back</span>
+            <span style="cursor:pointer; font-weight: 600;" onclick="showPage('mainPage')">⬅️ Back</span>
             <span class="title">Settings</span>
             <span></span>
         </div>
@@ -72,159 +93,155 @@
             <div class="section-label">Appearance</div>
             <div class="settings-group">
                 <div class="settings-item">
-                    <span>Theme Mode</span>
+                    <span>Theme</span>
                     <div>
                         <button class="btn btn-outline" onclick="setTheme('light-theme')">☀️</button>
                         <button class="btn btn-outline" onclick="setTheme('dark-theme')">🌙</button>
                     </div>
                 </div>
                 <div class="settings-item">
-                    <span>Custom Background</span>
-                    <input type="file" id="bgUpload" accept="image/*" style="display:none" onchange="uploadBG(event)">
+                    <span>Custom BG</span>
                     <button class="btn btn-outline" onclick="document.getElementById('bgUpload').click()">🖼️ Upload</button>
+                    <input type="file" id="bgUpload" accept="image/*" style="display:none" onchange="uploadBG(event)">
                 </div>
             </div>
 
-            <div class="section-label">Export Data</div>
+            <div class="section-label">Exports</div>
             <div class="settings-group">
                 <div class="settings-item">
-                    <span>Save Report</span>
+                    <span>Download Report</span>
                     <div>
-                        <button class="btn btn-outline" onclick="exportPDF()">📄 PDF</button>
-                        <button class="btn btn-outline" onclick="exportExcel()">📊 Excel</button>
+                        <button class="btn btn-outline" onclick="exportPDF()">PDF</button>
+                        <button class="btn btn-outline" onclick="exportExcel()">Excel</button>
                     </div>
                 </div>
             </div>
 
-            <div class="section-label">Data Management</div>
+            <div class="section-label">Danger Zone</div>
             <div class="settings-group">
-                <div class="settings-item" onclick="cleanData('today')">
-                    <span>Clear Today's Data</span>
-                    <span style="color:var(--danger)">🗑️</span>
-                </div>
-                <div class="settings-item" onclick="cleanData('week')">
-                    <span>Clear Last 7 Days</span>
-                    <span style="color:var(--danger)">🗑️</span>
-                </div>
-                <div class="settings-item" onclick="cleanData('month')">
-                    <span>Clear Last 30 Days</span>
-                    <span style="color:var(--danger)">🗑️</span>
-                </div>
-                <div class="settings-item" onclick="cleanData('all')" style="background: rgba(255,118,117,0.05);">
-                    <span style="color:var(--danger); font-weight:700;">RESET EVERYTHING</span>
-                    <span>🧨</span>
-                </div>
+                <div class="settings-item" onclick="cleanData('today')"><span>Clear Today</span><span style="color:var(--danger)">🗑️</span></div>
+                <div class="settings-item" onclick="cleanData('week')"><span>Clear 7 Days</span><span style="color:var(--danger)">🗑️</span></div>
+                <div class="settings-item" onclick="cleanData('month')"><span>Clear 30 Days</span><span style="color:var(--danger)">🗑️</span></div>
+                <div class="settings-item" onclick="cleanData('all')"><span style="color:var(--danger); font-weight:bold">CLEAR ALL</span><span>🧨</span></div>
             </div>
         </div>
     </div>
 
     <script>
         let allData = JSON.parse(localStorage.getItem('swiftCoinPro')) || {};
+        let selectedDate = new Date().toISOString().split('T')[0];
 
         function showPage(id) {
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
             document.getElementById(id).classList.add('active');
         }
 
-        // --- APPEARANCE ---
-        function setTheme(t) {
-            document.body.className = t;
-            localStorage.setItem('scTheme', t);
-        }
-
-        function uploadBG(e) {
-            const file = e.target.files[0];
-            const reader = new FileReader();
-            reader.onload = function(event) {
-                document.body.style.backgroundImage = `url(${event.target.result})`;
-                localStorage.setItem('scCustomBG', event.target.result);
-            };
-            reader.readAsDataURL(file);
-        }
-
-        // --- DATA CLEANING ---
-        function cleanData(type) {
-            if(!confirm(`Are you sure you want to delete ${type} data?`)) return;
+        function updateUI() {
+            const dayData = allData[selectedDate] || { budget: 0, items: [] };
+            const h = document.getElementById('history');
+            h.innerHTML = "";
             
-            const now = new Date();
-            if(type === 'all') {
-                allData = {};
-            } else {
-                let limitDays = type === 'today' ? 0 : (type === 'week' ? 7 : 30);
-                const cutoff = new Date();
-                cutoff.setDate(now.getDate() - limitDays);
-                
-                Object.keys(allData).forEach(dateStr => {
-                    if(new Date(dateStr) >= cutoff) delete allData[dateStr];
-                });
-            }
-            saveAndRefresh();
+            let totalSpent = 0;
+            dayData.items.forEach((i, idx) => {
+                totalSpent += parseFloat(i.amt);
+                h.innerHTML += `<div class="expense-card">
+                    <span><b>${i.where}</b><br><small>${selectedDate}</small></span>
+                    <div style="display:flex; align-items:center; gap:15px;">
+                        <span style="color:var(--danger); font-weight:700;">₹${i.amt}</span>
+                        <span onclick="deleteItem(${idx})" style="opacity:0.3; cursor:pointer;">✕</span>
+                    </div>
+                </div>`;
+            });
+
+            // Update Stats
+            const budget = dayData.budget || 0;
+            const saved = budget - totalSpent;
+            document.getElementById('statBudget').innerText = '₹' + budget;
+            document.getElementById('statSpent').innerText = '₹' + totalSpent;
+            document.getElementById('statSaving').innerText = '₹' + saved;
+
+            // Progress Bar
+            const perc = budget > 0 ? Math.min((totalSpent / budget) * 100, 100) : 0;
+            const pb = document.getElementById('progressBar');
+            pb.style.width = perc + '%';
+            pb.style.background = perc > 90 ? 'var(--danger)' : 'var(--accent)';
+
+            localStorage.setItem('swiftCoinPro', JSON.stringify(allData));
         }
 
-        // --- EXPORTS ---
+        function addExpense() {
+            const w = prompt("What for?");
+            const a = prompt("Amount?");
+            if(w && a) {
+                if(!allData[selectedDate]) allData[selectedDate] = { budget: 0, items: [] };
+                allData[selectedDate].items.unshift({ where: w, amt: parseFloat(a) });
+                updateUI();
+            }
+        }
+
+        function editBudget() {
+            const b = prompt("Daily Budget?", allData[selectedDate]?.budget || 0);
+            if(b !== null) {
+                if(!allData[selectedDate]) allData[selectedDate] = { budget: 0, items: [] };
+                allData[selectedDate].budget = parseFloat(b);
+                updateUI();
+            }
+        }
+
+        function deleteItem(idx) {
+            allData[selectedDate].items.splice(idx, 1);
+            updateUI();
+        }
+
+        // Appearance & Data (Settings Logic)
+        function setTheme(t) { document.body.className = t; localStorage.setItem('scTheme', t); }
+        
+        function uploadBG(e) {
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                document.body.style.backgroundImage = `url(${ev.target.result})`;
+                localStorage.setItem('scCustomBG', ev.target.result);
+            };
+            reader.readAsDataURL(e.target.files[0]);
+        }
+
+        function cleanData(type) {
+            if(!confirm("Are you sure?")) return;
+            const now = new Date();
+            if(type === 'all') allData = {};
+            else {
+                let days = type === 'today' ? 0 : (type === 'week' ? 7 : 30);
+                const cutoff = new Date(); cutoff.setDate(now.getDate() - days);
+                Object.keys(allData).forEach(date => { if(new Date(date) >= cutoff) delete allData[date]; });
+            }
+            updateUI();
+        }
+
         function exportExcel() {
             let csv = "Date,Item,Amount\n";
-            Object.keys(allData).sort().forEach(date => {
-                allData[date].items.forEach(i => {
-                    csv += `${date},${i.where},${i.amt}\n`;
-                });
-            });
-            const blob = new Blob([csv], { type: 'text/csv' });
-            const url = window.URL.createObjectURL(blob);
+            Object.keys(allData).forEach(d => allData[d].items.forEach(i => csv += `${d},${i.where},${i.amt}\n`));
+            const blob = new Blob([csv], {type:'text/csv'});
             const a = document.createElement('a');
-            a.setAttribute('href', url);
-            a.setAttribute('download', 'SwiftCoin_Report.csv');
-            a.click();
+            a.href = URL.createObjectURL(blob);
+            a.download = 'SwiftCoin.csv'; a.click();
         }
 
         function exportPDF() {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
-            doc.text("SwiftCoin Expense Report", 14, 15);
+            doc.text("Expense Report", 14, 15);
             let rows = [];
-            Object.keys(allData).sort().forEach(date => {
-                allData[date].items.forEach(i => rows.push([date, i.where, i.amt]));
-            });
-            doc.autoTable({ head: [['Date', 'Description', 'Amount']], body: rows, startY: 25 });
-            doc.save('SwiftCoin_Report.pdf');
+            Object.keys(allData).forEach(d => allData[d].items.forEach(i => rows.push([d, i.where, i.amt])));
+            doc.autoTable({ head:[['Date','Item','Amount']], body: rows, startY: 20 });
+            doc.save('SwiftCoin.pdf');
         }
 
-        // --- CORE LOGIC ---
-        function saveAndRefresh() {
-            localStorage.setItem('swiftCoinPro', JSON.stringify(allData));
-            renderHistory();
-        }
-
-        function addExpense() {
-            const w = prompt("What for?");
-            const a = prompt("How much?");
-            if(!w || !a) return;
-            const today = new Date().toISOString().split('T')[0];
-            if(!allData[today]) allData[today] = { items: [] };
-            allData[today].items.unshift({ where: w, amt: a });
-            saveAndRefresh();
-        }
-
-        function renderHistory() {
-            const h = document.getElementById('history');
-            h.innerHTML = "";
-            Object.keys(allData).reverse().forEach(date => {
-                allData[date].items.forEach(i => {
-                    h.innerHTML += `<div class="expense-card">
-                        <span><b>${i.where}</b><br><small>${date}</small></span>
-                        <span style="color:var(--danger); font-weight:700;">₹${i.amt}</span>
-                    </div>`;
-                });
-            });
-        }
-
-        // Load saved state
         window.onload = () => {
-            const savedBG = localStorage.getItem('scCustomBG');
-            if(savedBG) document.body.style.backgroundImage = `url(${savedBG})`;
+            const bg = localStorage.getItem('scCustomBG');
+            if(bg) document.body.style.backgroundImage = `url(${bg})`;
             setTheme(localStorage.getItem('scTheme') || 'light-theme');
-            renderHistory();
-        };
+            updateUI();
+        }
     </script>
 </body>
 </html>
