@@ -1,14 +1,14 @@
-// Function to open specific modal
-function openModal(id) {
-    document.getElementById(id).style.display = 'flex';
+// Function to handle the Calendar date change
+function handleDateChange(val) {
+    selectedDate = val;
+    updateUI();
 }
 
-// Function to close specific modal
-function closeModal(id) {
-    document.getElementById(id).style.display = 'none';
-}
+// Modal Toggle Logic
+function openModal(id) { document.getElementById(id).style.display = 'flex'; }
+function closeModal(id) { document.getElementById(id).style.display = 'none'; }
 
-// Save logic for the New Expense modal
+// Save Expense from Modal
 function saveNewExpense() {
     const w = document.getElementById('modalWhere').value;
     const a = document.getElementById('modalAmt').value;
@@ -17,12 +17,12 @@ function saveNewExpense() {
         allData[selectedDate].items.unshift({ where: w, amt: parseFloat(a) });
         updateUI();
         closeModal('expenseModal');
-        document.getElementById('modalWhere').value = ''; 
+        document.getElementById('modalWhere').value = '';
         document.getElementById('modalAmt').value = '';
     }
 }
 
-// Save logic for the Budget modal
+// Save Budget from Modal
 function saveNewBudget() {
     const b = document.getElementById('modalBudgetField').value;
     if(b !== "") {
