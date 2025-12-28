@@ -1,23 +1,27 @@
-/* Custom Modal Styling */
+/* Fixed Stats Grid */
+.stats-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 15px; }
+
+/* Modal Overlay (The gray background behind the pop-up) */
 .modal-overlay {
-    position: fixed; inset: 0; background: rgba(0,0,0,0.5);
-    display: flex; align-items: center; justify-content: center; z-index: 1000;
+    position: fixed; inset: 0; background: rgba(0,0,0,0.6);
+    display: flex; align-items: center; justify-content: center; z-index: 2000;
 }
+
+/* The White Pop-up Box */
 .custom-modal {
     background: white; padding: 25px; border-radius: 28px;
-    width: 90%; max-width: 360px; box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+    width: 90%; max-width: 360px; box-shadow: 0 20px 40px rgba(0,0,0,0.3);
 }
-.modal-header {
-    display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;
-}
-.modal-header h3 { margin: 0; font-size: 18px; }
-.close-x { font-size: 24px; color: #ccc; cursor: pointer; }
+
+.modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+.close-x { font-size: 28px; color: #bbb; cursor: pointer; }
 
 .custom-modal input {
     width: 100%; padding: 15px; margin-bottom: 15px;
-    border: 1px solid #eee; border-radius: 15px; background: #f9f9f9; font-size: 16px;
+    border: 1px solid #efefef; border-radius: 15px; background: #fcfcfc; font-size: 16px;
 }
+
 .modal-save-btn {
     width: 100%; padding: 15px; background: #00b894; color: white;
-    border: none; border-radius: 15px; font-weight: 700; cursor: pointer;
+    border: none; border-radius: 15px; font-weight: 700; font-size: 16px;
 }
