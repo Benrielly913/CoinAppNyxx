@@ -1,27 +1,32 @@
-/* Fixed Stats Grid */
+:root { 
+    --bg: #f4f7f6; --text: #2d3436; --card: #ffffff; 
+    --accent: #00b894; --danger: #ff7675; --overlay: rgba(255,255,255,0.8);
+}
+body.dark-theme { 
+    --bg: #1e272e; --text: #f1f2f6; --card: #2f3542; --overlay: rgba(47, 53, 66, 0.9);
+}
+* { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; transition: 0.2s; }
+body { margin: 0; height: 100vh; color: var(--text); background: var(--bg); overflow: hidden; }
+
+.page { display: none; height: 100vh; flex-direction: column; position: absolute; width: 100%; top: 0; left: 0; }
+.page.active { display: flex; }
+.content-area { flex: 1; overflow-y: auto; padding: 15px; background: var(--overlay); }
+.nav-header { padding: 15px 20px; background: var(--card); display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(0,0,0,0.1); }
+
 .stats-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 15px; }
+.stat-box { background: var(--card); padding: 12px; border-radius: 15px; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+.stat-label { font-size: 10px; font-weight: 800; opacity: 0.6; text-transform: uppercase; }
+.stat-val { font-size: 15px; font-weight: 900; margin-top: 4px; color: var(--accent); }
 
-/* Modal Overlay (The gray background behind the pop-up) */
-.modal-overlay {
-    position: fixed; inset: 0; background: rgba(0,0,0,0.6);
-    display: flex; align-items: center; justify-content: center; z-index: 2000;
-}
+.progress-container { background: rgba(0,0,0,0.1); height: 8px; border-radius: 10px; overflow: hidden; margin-bottom: 20px; }
+#progressBar { height: 100%; background: var(--accent); width: 0%; transition: 0.5s width ease; }
 
-/* The White Pop-up Box */
-.custom-modal {
-    background: white; padding: 25px; border-radius: 28px;
-    width: 90%; max-width: 360px; box-shadow: 0 20px 40px rgba(0,0,0,0.3);
-}
+.add-fab { position: fixed; bottom: 25px; right: 25px; width: 60px; height: 60px; border-radius: 20px; background: var(--accent); color: white; border: none; font-size: 30px; z-index: 100; }
 
+/* MODAL STYLES */
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; z-index: 2000; }
+.custom-modal { background: white; padding: 25px; border-radius: 28px; width: 90%; max-width: 360px; color: #333; }
 .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
 .close-x { font-size: 28px; color: #bbb; cursor: pointer; }
-
-.custom-modal input {
-    width: 100%; padding: 15px; margin-bottom: 15px;
-    border: 1px solid #efefef; border-radius: 15px; background: #fcfcfc; font-size: 16px;
-}
-
-.modal-save-btn {
-    width: 100%; padding: 15px; background: #00b894; color: white;
-    border: none; border-radius: 15px; font-weight: 700; font-size: 16px;
-}
+.custom-modal input { width: 100%; padding: 15px; margin-bottom: 15px; border: 1px solid #eee; border-radius: 15px; font-size: 16px; }
+.modal-save-btn { width: 100%; padding: 15px; background: var(--accent); color: white; border: none; border-radius: 15px; font-weight: 700; cursor: pointer; }
