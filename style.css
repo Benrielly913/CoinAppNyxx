@@ -1,0 +1,34 @@
+:root { 
+    --bg: #f4f7f6; --text: #2d3436; --card: #ffffff; 
+    --accent: #00b894; --danger: #ff7675; --overlay: rgba(255,255,255,0.8);
+}
+body.dark-theme { 
+    --bg: #1e272e; --text: #f1f2f6; --card: #2f3542; --overlay: rgba(47, 53, 66, 0.9);
+}
+* { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; transition: 0.2s; }
+body { margin: 0; height: 100vh; color: var(--text); background: var(--bg); background-size: cover; background-position: center; background-attachment: fixed; overflow: hidden; }
+
+.page { display: none; height: 100vh; flex-direction: column; position: absolute; width: 100%; top: 0; left: 0; }
+.page.active { display: flex; }
+.content-area { flex: 1; overflow-y: auto; padding: 15px; background: var(--overlay); }
+.nav-header { padding: 15px 20px; background: var(--card); display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(0,0,0,0.1); }
+.title { font-weight: 800; font-size: 20px; }
+
+.stats-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 15px; text-align: center; }
+.stat-box { background: var(--card); padding: 12px; border-radius: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+.stat-label { font-size: 10px; font-weight: 800; opacity: 0.6; text-transform: uppercase; }
+.stat-val { font-size: 15px; font-weight: 900; margin-top: 4px; }
+
+.progress-container { background: rgba(0,0,0,0.1); height: 8px; border-radius: 10px; overflow: hidden; margin-bottom: 20px; }
+#progressBar { height: 100%; background: var(--accent); width: 0%; }
+
+.settings-group { background: var(--card); border-radius: 15px; margin-bottom: 20px; overflow: hidden; }
+.settings-item { padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(0,0,0,0.05); }
+.section-label { font-size: 12px; font-weight: 700; color: var(--accent); margin: 10px 0 5px 10px; text-transform: uppercase; }
+
+.btn { padding: 8px 15px; border-radius: 8px; border: none; font-weight: 600; cursor: pointer; }
+.btn-outline { background: transparent; border: 1px solid var(--accent); color: var(--accent); }
+.text-danger { color: var(--danger); }
+
+.add-fab { position: fixed; bottom: 25px; right: 25px; width: 60px; height: 60px; border-radius: 20px; background: var(--accent); color: white; border: none; font-size: 30px; box-shadow: 0 8px 15px rgba(0,184,148,0.3); }
+.expense-card { background: var(--card); padding: 15px; border-radius: 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
