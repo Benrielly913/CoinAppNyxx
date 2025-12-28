@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>SwiftCoin Pro</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css?v=1">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
 </head>
@@ -24,18 +24,17 @@
             <div class="stats-grid">
                 <div class="stat-box" onclick="openModal('budgetModal')">
                     <div class="stat-label">Budget ✏️</div>
-                    <div id="statBudget" class="stat-val" style="color:var(--accent)">₹0</div>
+                    <div id="statBudget" class="stat-val">₹0</div>
                 </div>
                 <div class="stat-box">
                     <div class="stat-label">Spent</div>
-                    <div id="statSpent" class="stat-val" style="color:var(--danger)">₹0</div>
+                    <div id="statSpent" class="stat-val">₹0</div>
                 </div>
                 <div class="stat-box">
                     <div class="stat-label">Saving</div>
                     <div id="statSaving" class="stat-val">₹0</div>
                 </div>
             </div>
-
             <div class="progress-container"><div id="progressBar"></div></div>
             <div id="history"></div>
         </div>
@@ -68,15 +67,15 @@
 
     <div id="settingsPage" class="page">
         <div class="nav-header">
-            <span onclick="showPage('mainPage')">⬅️ Back</span>
+            <span onclick="showPage('mainPage')" style="cursor:pointer">⬅️ Back</span>
             <span class="title">Settings</span>
             <span></span>
         </div>
-        <div class="content-area" id="settingsContent">
+        <div class="content-area" id="settingsArea">
             </div>
     </div>
 
-    <script src="app.js"></script>
-    <script src="settings.js"></script>
+    <script src="app.js?v=1"></script>
+    <script src="settings.js?v=1"></script>
 </body>
 </html>
