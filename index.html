@@ -3,207 +3,228 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SwiftCoin - Pro Tracker</title>
+    <title>SwiftCoin Pro</title>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
 
     <style>
         :root { 
-            --bg: #f9f9f9; --text: #2d3436; --card: #ffffff; 
-            --accent: #00b894; --warn: #fdcb6e; --danger: #ff7675; 
+            --bg: #f4f7f6; --text: #2d3436; --card: #ffffff; 
+            --accent: #00b894; --danger: #ff7675; --overlay: rgba(255,255,255,0.8);
         }
         body.dark-theme { 
-            --bg: #1e272e; --text: #f1f2f6; --card: #2f3542; 
+            --bg: #1e272e; --text: #f1f2f6; --card: #2f3542; --overlay: rgba(47, 53, 66, 0.9);
         }
         
-        * { box-sizing: border-box; font-family: 'Segoe UI', system-ui, sans-serif; transition: 0.2s; }
-        body { margin: 0; height: 100vh; display: flex; flex-direction: column; color: var(--text); background: var(--bg); overflow: hidden; }
-        
-        /* HEADER & SEARCH */
-        .header { padding: 15px 20px; background: var(--card); display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; border-bottom: 1px solid rgba(0,0,0,0.05); }
-        .header-title { font-weight: 800; font-size: 18px; }
-        #dateDisplay { font-weight: 700; color: var(--accent); cursor: pointer; background: rgba(0,184,148,0.1); padding: 6px 15px; border-radius: 20px; text-align: center;}
+        * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        body { 
+            margin: 0; height: 100vh; color: var(--text); background: var(--bg); 
+            background-size: cover; background-position: center; background-attachment: fixed;
+        }
 
-        .search-container { padding: 10px 15px; background: var(--card); }
-        .search-input { width: 100%; padding: 10px 15px; border-radius: 20px; border: 1px solid rgba(0,0,0,0.1); background: var(--bg); color: var(--text); }
+        /* SCREEN MANAGEMENT */
+        .page { display: none; height: 100vh; flex-direction: column; position: absolute; width: 100%; top: 0; left: 0; }
+        .page.active { display: flex; }
+        .content-area { flex: 1; overflow-y: auto; padding: 20px; background: var(--overlay); }
 
-        .stats-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; padding: 15px; background: var(--card); text-align: center; }
-        .stat-box { padding: 10px; border-radius: 12px; background: var(--bg); }
-        .stat-label { font-size: 10px; text-transform: uppercase; font-weight: 800; opacity: 0.6; margin-bottom: 4px; }
-        .stat-val { font-size: 16px; font-weight: 900; }
+        /* HEADER */
+        .nav-header { padding: 15px 20px; background: var(--card); display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(0,0,0,0.1); }
+        .title { font-weight: 800; font-size: 20px; }
 
-        .progress-container { margin: 0 15px 10px; background: rgba(0,0,0,0.05); height: 8px; border-radius: 10px; overflow: hidden; }
-        #progressBar { height: 100%; background: var(--accent); width: 0%; transition: 0.5s width ease; }
+        /* SETTINGS STYLING */
+        .settings-group { background: var(--card); border-radius: 15px; margin-bottom: 20px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        .settings-item { padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(0,0,0,0.05); }
+        .settings-item:last-child { border: 0; }
+        .section-label { font-size: 12px; font-weight: 700; color: var(--accent); margin: 10px 0 5px 10px; text-transform: uppercase; }
 
-        /* LIST */
-        .history-container { flex: 1; overflow-y: auto; padding: 15px 15px 100px 15px; }
-        .item { background: var(--card); padding: 15px; border-radius: 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
-        
-        /* MODALS */
-        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); align-items: center; justify-content: center; z-index: 1000; backdrop-filter: blur(5px); }
-        .modal-content { background: var(--card); padding: 25px; border-radius: 25px; width: 90%; max-width: 350px; }
-        .btn { width: 100%; padding: 12px; border-radius: 12px; border: none; font-weight: 700; cursor: pointer; margin-top: 8px; }
-        .save-btn { background: var(--accent); color: white; }
+        /* BUTTONS */
+        .btn { padding: 10px 15px; border-radius: 10px; border: none; font-weight: 600; cursor: pointer; font-size: 14px; }
+        .btn-outline { background: transparent; border: 1px solid var(--accent); color: var(--accent); }
+        .btn-danger { background: rgba(255,118,117,0.1); color: var(--danger); }
+        .add-fab { position: fixed; bottom: 30px; right: 30px; width: 60px; height: 60px; border-radius: 50%; background: var(--accent); color: white; border: none; font-size: 30px; box-shadow: 0 10px 20px rgba(0,184,148,0.3); }
 
-        .bottom-bar { position: fixed; bottom: 0; width: 100%; background: var(--card); padding: 15px; display: flex; justify-content: center; border-top: 1px solid rgba(0,0,0,0.05); }
-        .add-btn { background: var(--accent); color: white; border: none; width: 55px; height: 55px; border-radius: 18px; font-size: 30px; box-shadow: 0 4px 12px rgba(0,184,148,0.3); }
+        /* LIST ITEMS */
+        .expense-card { background: var(--card); padding: 15px; border-radius: 12px; margin-bottom: 10px; display: flex; justify-content: space-between; }
     </style>
 </head>
-<body>
+<body class="light-theme">
 
-    <div class="header">
-        <div class="header-title">SwiftCoin</div>
-        <div id="dateDisplay" onclick="document.getElementById('calendarInput').showPicker()">
-            📅 <span id="dateText">-- ---</span>
+    <div id="mainPage" class="page active">
+        <div class="nav-header">
+            <span class="title">SwiftCoin</span>
+            <span style="cursor:pointer" onclick="showPage('settingsPage')">⚙️ Settings</span>
         </div>
-        <input type="date" id="calendarInput" style="display:none" onchange="handleDateChange(this.value)">
-        <div style="text-align: right; cursor:pointer;" onclick="toggleModal('settingsModal')">⚙️</div>
+        <div class="content-area" id="mainContent">
+            <div id="history"></div>
+        </div>
+        <button class="add-fab" onclick="addExpense()">+</button>
     </div>
 
-    <div class="search-container">
-        <input type="text" class="search-input" id="searchInput" placeholder="🔍 Search expenses..." oninput="updateUI()">
-    </div>
-
-    <div class="stats-grid">
-        <div class="stat-box" onclick="openBudgetEdit()" style="cursor:pointer">
-            <div class="stat-label">Budget ✏️</div>
-            <div id="statBudget" class="stat-val" style="color:var(--accent)">₹0</div>
+    <div id="settingsPage" class="page">
+        <div class="nav-header">
+            <span style="cursor:pointer" onclick="showPage('mainPage')">⬅️ Back</span>
+            <span class="title">Settings</span>
+            <span></span>
         </div>
-        <div class="stat-box">
-            <div class="stat-label">Spent</div>
-            <div id="statSpent" class="stat-val" style="color:var(--danger)">₹0</div>
-        </div>
-        <div class="stat-box">
-            <div class="stat-label">Saving</div>
-            <div id="statSaving" class="stat-val">₹0</div>
-        </div>
-    </div>
+        
+        <div class="content-area">
+            <div class="section-label">Appearance</div>
+            <div class="settings-group">
+                <div class="settings-item">
+                    <span>Theme Mode</span>
+                    <div>
+                        <button class="btn btn-outline" onclick="setTheme('light-theme')">☀️</button>
+                        <button class="btn btn-outline" onclick="setTheme('dark-theme')">🌙</button>
+                    </div>
+                </div>
+                <div class="settings-item">
+                    <span>Custom Background</span>
+                    <input type="file" id="bgUpload" accept="image/*" style="display:none" onchange="uploadBG(event)">
+                    <button class="btn btn-outline" onclick="document.getElementById('bgUpload').click()">🖼️ Upload</button>
+                </div>
+            </div>
 
-    <div class="progress-container"><div id="progressBar"></div></div>
+            <div class="section-label">Export Data</div>
+            <div class="settings-group">
+                <div class="settings-item">
+                    <span>Save Report</span>
+                    <div>
+                        <button class="btn btn-outline" onclick="exportPDF()">📄 PDF</button>
+                        <button class="btn btn-outline" onclick="exportExcel()">📊 Excel</button>
+                    </div>
+                </div>
+            </div>
 
-    <div class="history-container" id="history"></div>
-
-    <div class="bottom-bar">
-        <button class="add-btn" onclick="toggleModal('addModal')">+</button>
-    </div>
-
-    <div id="addModal" class="modal">
-        <div class="modal-content">
-            <h3>New Expense 💸</h3>
-            <input type="text" id="whereIn" class="search-input" style="margin-bottom:10px" placeholder="What for?">
-            <input type="number" id="amtIn" class="search-input" placeholder="Amount">
-            <button class="btn save-btn" onclick="addNew()">Add Expense</button>
-            <button class="btn" style="background:none" onclick="closeModals()">Cancel</button>
-        </div>
-    </div>
-
-    <div id="settingsModal" class="modal">
-        <div class="modal-content">
-            <h3>Settings</h3>
-            <button class="btn" style="background:#0984e3; color:white" onclick="exportToPDF()">📄 Export Monthly PDF</button>
-            <button class="btn" style="background:#6c5ce7; color:white" onclick="downloadBackup()">💾 Backup Data (JSON)</button>
-            <button class="btn" onclick="setTheme('light-theme')">☀️ Light Mode</button>
-            <button class="btn" style="background:#333; color:#fff;" onclick="setTheme('dark-theme')">🌙 Dark Mode</button>
-            <button class="btn" style="color:var(--danger); background:rgba(255,118,117,0.1);" onclick="clearAllData()">⚠️ Clear All Data</button>
-            <button class="btn" style="background:none" onclick="closeModals()">Close</button>
+            <div class="section-label">Data Management</div>
+            <div class="settings-group">
+                <div class="settings-item" onclick="cleanData('today')">
+                    <span>Clear Today's Data</span>
+                    <span style="color:var(--danger)">🗑️</span>
+                </div>
+                <div class="settings-item" onclick="cleanData('week')">
+                    <span>Clear Last 7 Days</span>
+                    <span style="color:var(--danger)">🗑️</span>
+                </div>
+                <div class="settings-item" onclick="cleanData('month')">
+                    <span>Clear Last 30 Days</span>
+                    <span style="color:var(--danger)">🗑️</span>
+                </div>
+                <div class="settings-item" onclick="cleanData('all')" style="background: rgba(255,118,117,0.05);">
+                    <span style="color:var(--danger); font-weight:700;">RESET EVERYTHING</span>
+                    <span>🧨</span>
+                </div>
+            </div>
         </div>
     </div>
 
     <script>
-        let allData = JSON.parse(localStorage.getItem('swiftCoinV4')) || {};
-        let selectedDate = new Date().toISOString().split('T')[0];
+        let allData = JSON.parse(localStorage.getItem('swiftCoinPro')) || {};
 
-        function handleDateChange(val) { selectedDate = val; updateUI(); }
+        function showPage(id) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+        }
 
-        function updateUI() {
-            const dayData = allData[selectedDate] || { budget: 0, items: [] };
-            const searchQuery = document.getElementById('searchInput').value.toLowerCase();
-            const h = document.getElementById('history');
-            h.innerHTML = '';
+        // --- APPEARANCE ---
+        function setTheme(t) {
+            document.body.className = t;
+            localStorage.setItem('scTheme', t);
+        }
+
+        function uploadBG(e) {
+            const file = e.target.files[0];
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                document.body.style.backgroundImage = `url(${event.target.result})`;
+                localStorage.setItem('scCustomBG', event.target.result);
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // --- DATA CLEANING ---
+        function cleanData(type) {
+            if(!confirm(`Are you sure you want to delete ${type} data?`)) return;
             
-            let totalSpent = 0;
-            const filteredItems = dayData.items.filter(item => 
-                item.where.toLowerCase().includes(searchQuery)
-            );
+            const now = new Date();
+            if(type === 'all') {
+                allData = {};
+            } else {
+                let limitDays = type === 'today' ? 0 : (type === 'week' ? 7 : 30);
+                const cutoff = new Date();
+                cutoff.setDate(now.getDate() - limitDays);
+                
+                Object.keys(allData).forEach(dateStr => {
+                    if(new Date(dateStr) >= cutoff) delete allData[dateStr];
+                });
+            }
+            saveAndRefresh();
+        }
 
-            filteredItems.forEach((item, index) => {
-                totalSpent += parseFloat(item.amt);
-                h.innerHTML += `<div class="item">
-                    <div><b>${item.where}</b><br><small style="color:var(--danger)">₹${item.amt}</small></div>
-                    <div onclick="deleteItem(${index})" style="cursor:pointer; opacity:0.5;">🗑️</div>
-                </div>`;
+        // --- EXPORTS ---
+        function exportExcel() {
+            let csv = "Date,Item,Amount\n";
+            Object.keys(allData).sort().forEach(date => {
+                allData[date].items.forEach(i => {
+                    csv += `${date},${i.where},${i.amt}\n`;
+                });
             });
-
-            const budget = dayData.budget || 0;
-            document.getElementById('statBudget').innerText = '₹' + budget;
-            document.getElementById('statSpent').innerText = '₹' + totalSpent;
-            document.getElementById('statSaving').innerText = '₹' + (budget - totalSpent);
-            
-            const perc = budget > 0 ? Math.min((totalSpent / budget) * 100, 100) : 0;
-            const pb = document.getElementById('progressBar');
-            pb.style.width = perc + '%';
-            pb.style.background = perc > 90 ? 'var(--danger)' : 'var(--accent)';
-
-            document.getElementById('dateText').innerText = new Date(selectedDate).toLocaleDateString(undefined, {day:'numeric', month:'short'});
-            localStorage.setItem('swiftCoinV4', JSON.stringify(allData));
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.setAttribute('href', url);
+            a.setAttribute('download', 'SwiftCoin_Report.csv');
+            a.click();
         }
 
-        function addNew() {
-            const w = document.getElementById('whereIn').value;
-            const a = document.getElementById('amtIn').value;
-            if(w && a) {
-                if (!allData[selectedDate]) allData[selectedDate] = { budget: 0, items: [] };
-                allData[selectedDate].items.unshift({ where: w, amt: parseFloat(a) });
-                updateUI(); closeModals();
-                document.getElementById('whereIn').value = ''; document.getElementById('amtIn').value = '';
-            }
-        }
-
-        function deleteItem(index) {
-            if(confirm("Delete this entry?")) {
-                allData[selectedDate].items.splice(index, 1);
-                updateUI();
-            }
-        }
-
-        function openBudgetEdit() {
-            const b = prompt("Enter Daily Budget:", allData[selectedDate]?.budget || 0);
-            if(b !== null) {
-                if (!allData[selectedDate]) allData[selectedDate] = { budget: 0, items: [] };
-                allData[selectedDate].budget = parseFloat(b);
-                updateUI();
-            }
-        }
-
-        function downloadBackup() {
-            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(allData));
-            const dl = document.createElement('a');
-            dl.setAttribute("href", dataStr);
-            dl.setAttribute("download", `SwiftCoin_Backup_${new Date().toISOString().split('T')[0]}.json`);
-            dl.click();
-        }
-
-        async function exportToPDF() {
+        function exportPDF() {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
-            doc.setFontSize(18);
-            doc.text(`Monthly Spending: ${selectedDate.substring(0,7)}`, 14, 20);
-            const rows = [];
-            Object.keys(allData).filter(d => d.startsWith(selectedDate.substring(0,7))).sort().forEach(d => {
-                allData[d].items.forEach(i => rows.push([d, i.where, `INR ${i.amt}`]));
+            doc.text("SwiftCoin Expense Report", 14, 15);
+            let rows = [];
+            Object.keys(allData).sort().forEach(date => {
+                allData[date].items.forEach(i => rows.push([date, i.where, i.amt]));
             });
-            doc.autoTable({ head: [['Date', 'Item', 'Cost']], body: rows, startY: 30, theme: 'grid' });
-            doc.save(`Report_${selectedDate.substring(0,7)}.pdf`);
+            doc.autoTable({ head: [['Date', 'Description', 'Amount']], body: rows, startY: 25 });
+            doc.save('SwiftCoin_Report.pdf');
         }
 
-        function toggleModal(id) { document.getElementById(id).style.display = 'flex'; }
-        function closeModals() { document.querySelectorAll('.modal').forEach(m => m.style.display = 'none'); }
-        function setTheme(n) { document.body.className = n; localStorage.setItem('scTheme', n); }
-        function clearAllData() { if(confirm("Erase all data forever?")) { localStorage.clear(); location.reload(); } }
+        // --- CORE LOGIC ---
+        function saveAndRefresh() {
+            localStorage.setItem('swiftCoinPro', JSON.stringify(allData));
+            renderHistory();
+        }
 
-        document.body.className = localStorage.getItem('scTheme') || 'light-theme';
-        updateUI();
+        function addExpense() {
+            const w = prompt("What for?");
+            const a = prompt("How much?");
+            if(!w || !a) return;
+            const today = new Date().toISOString().split('T')[0];
+            if(!allData[today]) allData[today] = { items: [] };
+            allData[today].items.unshift({ where: w, amt: a });
+            saveAndRefresh();
+        }
+
+        function renderHistory() {
+            const h = document.getElementById('history');
+            h.innerHTML = "";
+            Object.keys(allData).reverse().forEach(date => {
+                allData[date].items.forEach(i => {
+                    h.innerHTML += `<div class="expense-card">
+                        <span><b>${i.where}</b><br><small>${date}</small></span>
+                        <span style="color:var(--danger); font-weight:700;">₹${i.amt}</span>
+                    </div>`;
+                });
+            });
+        }
+
+        // Load saved state
+        window.onload = () => {
+            const savedBG = localStorage.getItem('scCustomBG');
+            if(savedBG) document.body.style.backgroundImage = `url(${savedBG})`;
+            setTheme(localStorage.getItem('scTheme') || 'light-theme');
+            renderHistory();
+        };
     </script>
 </body>
 </html>
