@@ -1,44 +1,30 @@
-function setTheme(t) { 
-    document.body.className = t; 
-    localStorage.setItem('scTheme', t); 
+function showPage(id) {
+    // Hide all pages
+    document.querySelectorAll('.page').forEach(p => p.style.display = 'none');
+    // Show target
+    document.getElementById(id).style.display = 'flex';
 }
 
-function uploadBG(e) {
-    const reader = new FileReader();
-    reader.onload = (ev) => {
-        document.body.style.backgroundImage = `url(${ev.target.result})`;
-        localStorage.setItem('scCustomBG', ev.target.result);
-    };
-    reader.readAsDataURL(e.target.files[0]);
+function setTheme(t) {
+    document.body.className = t;
+    localStorage.setItem('scTheme', t);
 }
 
-function cleanData(type) {
-    if(!confirm("Are you sure?")) return;
-    if(type === 'all') allData = {};
-    else {
-        let days = type === 'today' ? 0 : 30;
-        const now = new Date();
-        const cutoff = new Date(); cutoff.setDate(now.getDate() - days);
-        Object.keys(allData).forEach(date => { if(new Date(date) >= cutoff) delete allData[date]; });
+function clearAllData() {
+    if(confirm("Erase all data? This cannot be undone.")) {
+        localStorage.removeItem('swiftCoinPro');
+        location.reload();
     }
-    updateUI();
-}
-
-function exportExcel() {
-    let csv = "Date,Item,Amount\n";
-    Object.keys(allData).forEach(d => allData[d].items.forEach(i => csv += `${d},${i.where},${i.amt}\n`));
-    const blob = new Blob([csv], {type:'text/csv'});
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = 'SwiftCoin.csv'; a.click();
 }
 
 function exportPDF() {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
-    doc.text("Expense Report", 14, 15);
+    doc.text("SwiftCoin Report", 14, 15);
     let rows = [];
-    Object.keys(allData).forEach(d => allData[d].items.forEach(i => rows.push([d, i.where, i.amt])));
-    doc.autoTable({ head:[['Date','Item','Amount']], body: rows, startY: 20 });
-    doc.save('SwiftCoin.pdf');
+    Object.keys(allData).forEach(date => {
+        allData[date].items.forEach(i => rows.push([date, i.where, "₹" + i.amt]));
+    });
+    doc.autoTable({ head: [['Date', 'Description', 'Amount']], body: rows, startY: 20 });
+    doc.save('SwiftCoin_Expenses.pdf');
 }
