@@ -6,25 +6,26 @@ window.onload = () => {
     const savedTheme = localStorage.getItem('scTheme') || 'light-theme';
     document.body.className = savedTheme;
 
+    // Splash Timer aligned with CSS animations
     setTimeout(() => {
         const splash = document.getElementById('splashScreen');
         splash.style.opacity = '0';
-        setTimeout(() => splash.style.display = 'none', 500);
-        
-        updateUI();
+        setTimeout(() => {
+            splash.style.display = 'none';
+            updateUI();
 
-        // Automatic Budget Prompt on first-time use today
-        const dayData = allData[selectedDate] || { budget: 0 };
-        if (dayData.budget === 0) {
-            openModal('budgetModal');
-        }
-    }, 2000);
+            // Budget prompt for today
+            const dayData = allData[selectedDate] || { budget: 0 };
+            if (dayData.budget === 0) {
+                openModal('budgetModal');
+            }
+        }, 1000);
+    }, 2800);
 };
 
 function updateUI() {
     const dayData = allData[selectedDate] || { budget: 0, items: [] };
     const h = document.getElementById('history');
-    
     const dateObj = new Date(selectedDate);
     document.getElementById('dateText').innerText = dateObj.toLocaleDateString(undefined, {day:'numeric', month:'short'});
 
@@ -32,7 +33,7 @@ function updateUI() {
     let totalSpent = 0;
 
     if (dayData.items.length === 0) {
-        h.innerHTML = `<div style="text-align:center; padding:60px; opacity:0.3;">No records today.</div>`;
+        h.innerHTML = `<div style="text-align:center; padding:60px; opacity:0.3;">No records for today.</div>`;
     } else {
         dayData.items.forEach((i, idx) => {
             totalSpent += parseFloat(i.amt);
