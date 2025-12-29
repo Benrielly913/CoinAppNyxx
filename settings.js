@@ -1,7 +1,5 @@
 function showPage(id) {
-    // Hide all pages
     document.querySelectorAll('.page').forEach(p => p.style.display = 'none');
-    // Show target
     document.getElementById(id).style.display = 'flex';
 }
 
@@ -11,7 +9,7 @@ function setTheme(t) {
 }
 
 function clearAllData() {
-    if(confirm("Erase all data? This cannot be undone.")) {
+    if(confirm("DANGER: This will delete ALL your data forever. Proceed?")) {
         localStorage.removeItem('swiftCoinPro');
         location.reload();
     }
@@ -20,11 +18,12 @@ function clearAllData() {
 function exportPDF() {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
-    doc.text("SwiftCoin Report", 14, 15);
+    doc.text("SwiftCoin Expense Report", 14, 15);
     let rows = [];
     Object.keys(allData).forEach(date => {
         allData[date].items.forEach(i => rows.push([date, i.where, "₹" + i.amt]));
     });
     doc.autoTable({ head: [['Date', 'Description', 'Amount']], body: rows, startY: 20 });
-    doc.save('SwiftCoin_Expenses.pdf');
-}
+    doc.save('SwiftCoin_Report.pdf');
+}\
+
