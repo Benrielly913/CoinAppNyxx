@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>SwiftCoin Pro</title>
-    <link rel="stylesheet" href="style.css?v=3">
+    <link rel="stylesheet" href="style.css?v=5">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
 </head>
@@ -12,58 +12,72 @@
 
     <div id="splashScreen" class="splash-overlay">
         <div class="splash-content">
-            <h1 style="font-size: 50px;">🪙</h1>
-            <h2 style="letter-spacing: 2px;">SWIFTCOIN</h2>
-            <p style="opacity: 0.8;">Smart Spending</p>
+            <h1 style="font-size: 60px; margin: 0;">🪙</h1>
+            <h2 style="letter-spacing: 3px; margin: 10px 0;">SWIFTCOIN</h2>
+            <p style="opacity: 0.7; font-weight: 300;">Smart Spending Tracker</p>
         </div>
     </div>
 
     <div id="mainPage" class="page active">
         <div class="nav-header">
             <span class="title">SwiftCoin</span>
-            <div id="dateDisplay" onclick="document.getElementById('calendarInput').showPicker()">
+            <div id="dateDisplay" class="date-pill" onclick="document.getElementById('calendarInput').showPicker()">
                 📅 <span id="dateText">-- ---</span>
             </div>
             <input type="date" id="calendarInput" style="display:none" onchange="handleDateChange(this.value)">
-            <span style="cursor:pointer" onclick="showPage('settingsPage')">⚙️ Settings</span>
+            <span class="settings-icon" onclick="showPage('settingsPage')">⚙️</span>
         </div>
         
         <div class="content-area">
             <div class="stats-grid">
                 <div class="stat-box" onclick="openModal('budgetModal')">
-                    <div class="stat-label">Budget ✏️</div>
+                    <div class="stat-label">BUDGET ✏️</div>
                     <div id="statBudget" class="stat-val">₹0</div>
                 </div>
                 <div class="stat-box">
-                    <div class="stat-label">Spent</div>
-                    <div id="statSpent" class="stat-val">₹0</div>
+                    <div class="stat-label">SPENT</div>
+                    <div id="statSpent" class="stat-val" style="color:var(--danger)">₹0</div>
                 </div>
                 <div class="stat-box">
-                    <div class="stat-label">Saving</div>
+                    <div class="stat-label">SAVING</div>
                     <div id="statSaving" class="stat-val">₹0</div>
                 </div>
             </div>
+            
             <div class="progress-container"><div id="progressBar"></div></div>
             <div id="history"></div>
         </div>
+        
         <button class="add-fab" onclick="openModal('expenseModal')">+</button>
-    </div>
-
-    <div id="budgetModal" class="modal-overlay" style="display:none;">
-        <div class="custom-modal">
-            <div class="modal-header"><h3>Daily Budget 🎯</h3><span class="close-x" onclick="closeModal('budgetModal')">&times;</span></div>
-            <p style="font-size: 13px; color: #666; margin-bottom: 15px;">How much do you plan to spend today?</p>
-            <input type="number" id="modalBudgetField" placeholder="Enter amount (e.g. 500)">
-            <button class="modal-save-btn" onclick="saveNewBudget()">Set Budget</button>
-        </div>
     </div>
 
     <div id="expenseModal" class="modal-overlay" style="display:none;">
         <div class="custom-modal">
-            <div class="modal-header"><h3>New Expense 💸</h3><span class="close-x" onclick="closeModal('expenseModal')">&times;</span></div>
-            <input type="text" id="modalWhere" placeholder="Description (e.g. Lunch)">
-            <input type="number" id="modalAmt" placeholder="Amount (e.g. 150)">
-            <button class="modal-save-btn" onclick="saveNewExpense()">Save Expense</button>
+            <div class="modal-header">
+                <h3>New Expense 💸</h3>
+                <span class="close-x" onclick="closeModal('expenseModal')">&times;</span>
+            </div>
+            <div class="category-grid">
+                <div class="cat-item selected" onclick="selectCat('🍔', this)">🍔</div>
+                <div class="cat-item" onclick="selectCat('🚗', this)">🚗</div>
+                <div class="cat-item" onclick="selectCat('🛍️', this)">🛍️</div>
+                <div class="cat-item" onclick="selectCat('🍿', this)">🍿</div>
+            </div>
+            <input type="text" id="modalWhere" placeholder="What for?">
+            <input type="number" id="modalAmt" placeholder="Amount">
+            <button class="modal-save-btn" onclick="saveNewExpense()">Add Expense</button>
+        </div>
+    </div>
+
+    <div id="budgetModal" class="modal-overlay" style="display:none;">
+        <div class="custom-modal">
+            <div class="modal-header">
+                <h3>Daily Budget 🎯</h3>
+                <span class="close-x" onclick="closeModal('budgetModal')">&times;</span>
+            </div>
+            <p style="font-size: 13px; color: #666; margin-bottom: 15px;">Set your spending limit for today.</p>
+            <input type="number" id="modalBudgetField" placeholder="Amount (e.g. 1000)">
+            <button class="modal-save-btn" onclick="saveNewBudget()">Save Budget</button>
         </div>
     </div>
 
@@ -77,8 +91,8 @@
             <div class="section-label">Appearance</div>
             <div class="settings-group">
                 <div class="settings-item">
-                    <span>Dark Mode</span>
-                    <div>
+                    <span>Theme</span>
+                    <div class="theme-btns">
                         <button class="btn-sm" onclick="setTheme('light-theme')">☀️</button>
                         <button class="btn-sm" onclick="setTheme('dark-theme')">🌙</button>
                     </div>
@@ -87,18 +101,16 @@
             <div class="section-label">Data Management</div>
             <div class="settings-group">
                 <div class="settings-item" onclick="exportPDF()" style="cursor:pointer">
-                    <span>Export to PDF</span>
-                    <span>📥</span>
+                    <span>Export to PDF 📥</span>
                 </div>
                 <div class="settings-item" onclick="clearAllData()" style="cursor:pointer">
-                    <span style="color:var(--danger)">Clear All Data</span>
-                    <span>🗑️</span>
+                    <span style="color:var(--danger)">Clear All Data 🗑️</span>
                 </div>
             </div>
         </div>
     </div>
 
-    <script src="app.js?v=3"></script>
-    <script src="settings.js?v=3"></script>
+    <script src="app.js?v=5"></script>
+    <script src="settings.js?v=5"></script>
 </body>
 </html>
