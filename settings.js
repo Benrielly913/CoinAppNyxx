@@ -1,5 +1,9 @@
 function showPage(id) {
-    document.querySelectorAll('.page').forEach(p => p.style.display = 'none');
+    // Hide all pages
+    document.getElementById('mainPage').style.display = 'none';
+    document.getElementById('settingsPage').style.display = 'none';
+    
+    // Show selected page
     document.getElementById(id).style.display = 'flex';
 }
 
@@ -9,7 +13,7 @@ function setTheme(t) {
 }
 
 function clearAllData() {
-    if(confirm("DANGER: This will delete ALL your data forever. Proceed?")) {
+    if(confirm("DANGER: This will delete ALL your history. Continue?")) {
         localStorage.removeItem('swiftCoinPro');
         location.reload();
     }
@@ -25,5 +29,4 @@ function exportPDF() {
     });
     doc.autoTable({ head: [['Date', 'Description', 'Amount']], body: rows, startY: 20 });
     doc.save('SwiftCoin_Report.pdf');
-}\
-
+}
