@@ -20,18 +20,30 @@ window.onload = () => {
 function updateUI() {
     const dayData = allData[selectedDate] || { budget: 0, items: [] };
     const h = document.getElementById('history');
+    const searchVal = document.getElementById('searchInput').value.toLowerCase();
+    
     document.getElementById('dateText').innerText = new Date(selectedDate).toLocaleDateString(undefined, {day:'numeric', month:'short'});
     
     h.innerHTML = "";
     let totalSpent = 0;
-    if (dayData.items.length === 0) {
-        h.innerHTML = `<div style="text-align:center; padding:60px; opacity:0.3;">No records today.</div>`;
+
+    // Filter items based on search
+    const filteredItems = dayData.items.filter(item => 
+        item.where.toLowerCase().includes(searchVal)
+    );
+
+    if (filteredItems.length === 0) {
+        h.innerHTML = `<div style="text-align:center; padding:60px; opacity:0.3;">No matches found.</div>`;
     } else {
-        dayData.items.forEach((i, idx) => {
-            totalSpent += parseFloat(i.amt);
+        filteredItems.forEach((i, idx) => {
+            // We still calculate total spent based on ALL items for the day, 
+            // but we only display filtered ones.
             h.innerHTML += `<div style="background:var(--card); padding:18px; border-radius:20px; margin-bottom:12px; display:flex; justify-content:space-between; align-items:center; box-shadow: 0 2px 5px rgba(0,0,0,0.02);"><span><b>${i.where}</b></span><div style="display:flex; align-items:center; gap:15px;"><span style="color:var(--danger); font-weight:700;">₹${i.amt}</span><span onclick="deleteItem(${idx})" style="opacity:0.2; cursor:pointer;">✕</span></div></div>`;
         });
     }
+
+    // Always calculate totals from all items, not just filtered ones
+    dayData.items.forEach(item => totalSpent += parseFloat(item.amt));
 
     const budget = dayData.budget || 0;
     document.getElementById('statBudget').innerText = '₹' + budget;
@@ -42,7 +54,6 @@ function updateUI() {
     const perc = budget > 0 ? Math.min((totalSpent / budget) * 100, 100) : 0;
     progBar.style.width = perc + '%';
     
-    // RED ALERT: If spent > budget
     if (totalSpent > budget && budget > 0) {
         progBar.classList.add('over-budget');
     } else {
