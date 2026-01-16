@@ -26,24 +26,17 @@ function updateUI() {
     
     h.innerHTML = "";
     let totalSpent = 0;
+    dayData.items.forEach(item => totalSpent += parseFloat(item.amt));
 
-    // Filter items based on search
-    const filteredItems = dayData.items.filter(item => 
-        item.where.toLowerCase().includes(searchVal)
-    );
+    const filteredItems = dayData.items.filter(item => item.where.toLowerCase().includes(searchVal));
 
     if (filteredItems.length === 0) {
-        h.innerHTML = `<div style="text-align:center; padding:60px; opacity:0.3;">No matches found.</div>`;
+        h.innerHTML = `<div style="text-align:center; padding:60px; opacity:0.3;">No matching records.</div>`;
     } else {
         filteredItems.forEach((i, idx) => {
-            // We still calculate total spent based on ALL items for the day, 
-            // but we only display filtered ones.
             h.innerHTML += `<div style="background:var(--card); padding:18px; border-radius:20px; margin-bottom:12px; display:flex; justify-content:space-between; align-items:center; box-shadow: 0 2px 5px rgba(0,0,0,0.02);"><span><b>${i.where}</b></span><div style="display:flex; align-items:center; gap:15px;"><span style="color:var(--danger); font-weight:700;">₹${i.amt}</span><span onclick="deleteItem(${idx})" style="opacity:0.2; cursor:pointer;">✕</span></div></div>`;
         });
     }
-
-    // Always calculate totals from all items, not just filtered ones
-    dayData.items.forEach(item => totalSpent += parseFloat(item.amt));
 
     const budget = dayData.budget || 0;
     document.getElementById('statBudget').innerText = '₹' + budget;
@@ -51,13 +44,12 @@ function updateUI() {
     document.getElementById('statSaving').innerText = '₹' + (budget - totalSpent);
 
     const progBar = document.getElementById('progressBar');
-    const perc = budget > 0 ? Math.min((totalSpent / budget) * 100, 100) : 0;
-    progBar.style.width = perc + '%';
-    
-    if (totalSpent > budget && budget > 0) {
-        progBar.classList.add('over-budget');
+    if (budget > 0) {
+        let perc = (totalSpent / budget) * 100;
+        progBar.style.width = Math.min(perc, 100) + "%";
+        progBar.style.backgroundColor = totalSpent > budget ? "var(--danger)" : "var(--accent)";
     } else {
-        progBar.classList.remove('over-budget');
+        progBar.style.width = "0%";
     }
 
     localStorage.setItem('swiftCoinPro', JSON.stringify(allData));
