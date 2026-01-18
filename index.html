@@ -4,112 +4,106 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>SwiftCoin Pro</title>
-    <link rel="stylesheet" href="style.css?v=10">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
 </head>
 <body class="light-theme">
 
-    <div id="splashScreen" class="splash-overlay">
-        <div class="splash-content">
-            <div class="logo-container">
-                <img src="coinlogo.png" alt="SwiftCoin Logo" class="main-logo">
-            </div>
-            <h2 class="splash-title">SWIFTCOIN</h2>
-            <div class="loader-line"><div class="loader-progress"></div></div>
-        </div>
-    </div>
-
     <div id="mainPage" class="page active">
         <div class="nav-header">
-            <span class="title">SwiftCoin</span>
-            <div id="dateDisplay" class="date-pill" onclick="document.getElementById('calendarInput').showPicker()">
-                📅 <span id="dateText">-- ---</span>
+            <div class="user-profile" onclick="showPage('settingsPage')">
+                <div class="avatar">S</div>
+                <div class="welcome-text">
+                    <span class="greet">Welcome back,</span>
+                    <span class="user-name">Swift User</span>
+                </div>
             </div>
-            <input type="date" id="calendarInput" style="display:none" onchange="handleDateChange(this.value)">
-            <span class="settings-icon" style="cursor:pointer; font-size:20px;" onclick="showPage('settingsPage')">⚙️</span>
+            <div class="date-chip" onclick="document.getElementById('calendarInput').showPicker()">
+                <span id="dateText">-- ---</span>
+                <input type="date" id="calendarInput" style="display:none" onchange="handleDateChange(this.value)">
+            </div>
         </div>
         
         <div class="content-area">
-            <div class="stats-grid">
-                <div class="stat-box" onclick="openModal('budgetModal')">
-                    <div class="stat-label">BUDGET ✏️</div>
-                    <div id="statBudget" class="stat-val">₹0</div>
-                </div>
-                <div class="stat-box">
-                    <div class="stat-label">SPENT</div>
-                    <div id="statSpent" class="stat-val" style="color:var(--danger)">₹0</div>
-                </div>
-                <div class="stat-box">
-                    <div class="stat-label">SAVING</div>
-                    <div id="statSaving" class="stat-val">₹0</div>
+            <div class="balance-card">
+                <div class="card-label">TOTAL SPENT TODAY</div>
+                <div id="statSpent" class="main-balance">₹0</div>
+                
+                <div class="progress-wrapper">
+                    <div class="progress-container">
+                        <div id="progressBar"></div>
+                    </div>
+                    <div class="progress-labels">
+                        <span id="statBudget">Budget: ₹0</span>
+                        <span id="statSaving">Saved: ₹0</span>
+                    </div>
                 </div>
             </div>
-            
-            <div class="progress-container"><div id="progressBar"></div></div>
 
-            <div class="search-container">
-                <input type="text" id="searchInput" placeholder="Search expenses..." oninput="updateUI()">
+            <div class="section-header">
+                <h3>Transactions</h3>
+                <div class="search-bar">
+                    <input type="text" id="searchInput" placeholder="Search..." oninput="updateUI()">
+                </div>
             </div>
 
-            <div id="history"></div>
+            <div id="history" class="expense-list"></div>
         </div>
+
         <button class="add-fab" onclick="openModal('expenseModal')">+</button>
     </div>
 
     <div id="expenseModal" class="modal-overlay" style="display:none;">
         <div class="custom-modal">
-            <div class="modal-header"><h3>New Expense 💸</h3><span class="close-x" onclick="closeModal('expenseModal')">&times;</span></div>
-            
+            <div class="modal-header">
+                <h3>Add Expense</h3>
+                <span class="close-x" onclick="closeModal('expenseModal')">&times;</span>
+            </div>
             <div class="category-grid">
                 <div class="cat-item selected" onclick="selectCat('🍔', this)">🍔</div>
                 <div class="cat-item" onclick="selectCat('🚗', this)">🚗</div>
                 <div class="cat-item" onclick="selectCat('🛍️', this)">🛍️</div>
                 <div class="cat-item" onclick="selectCat('🍿', this)">🍿</div>
                 <div class="cat-item" onclick="selectCat('💡', this)">💡</div>
-                <div class="cat-item" onclick="selectCat('💊', this)">💊</div>
             </div>
-
             <input type="text" id="modalWhere" placeholder="What for?">
             <input type="number" id="modalAmt" placeholder="Amount">
-            <button class="modal-save-btn" onclick="saveNewExpense()">Add Expense</button>
+            <button class="modal-save-btn" onclick="saveNewExpense()">Add to Ledger</button>
         </div>
     </div>
 
     <div id="budgetModal" class="modal-overlay" style="display:none;">
         <div class="custom-modal">
-            <div class="modal-header"><h3>Daily Budget 🎯</h3><span class="close-x" onclick="closeModal('budgetModal')">&times;</span></div>
-            <input type="number" id="modalBudgetField" placeholder="Set today's limit">
-            <button class="modal-save-btn" onclick="saveNewBudget()">Save Budget</button>
+            <div class="modal-header"><h3>Set Daily Goal</h3></div>
+            <input type="number" id="modalBudgetField" placeholder="Enter amount">
+            <button class="modal-save-btn" onclick="saveNewBudget()">Confirm Budget</button>
         </div>
     </div>
 
     <div id="settingsPage" class="page" style="display:none;">
         <div class="nav-header">
-            <span onclick="showPage('mainPage')" style="cursor:pointer; font-weight:bold;">⬅️ Back</span>
+            <span class="back-btn" onclick="showPage('mainPage')">←</span>
             <span class="title">Settings</span>
             <span></span>
         </div>
         <div class="content-area">
-            <div class="section-label">Appearance</div>
-            <div class="settings-group">
+            <div class="settings-card">
                 <div class="settings-item">
-                    <span>Theme Mode</span>
-                    <div class="theme-btns">
-                        <button class="btn-sm" onclick="setTheme('light-theme')">☀️</button>
-                        <button class="btn-sm" onclick="setTheme('dark-theme')">🌙</button>
+                    <div class="item-info">
+                        <span class="item-title">Dark Mode</span>
+                        <span class="item-sub">Easier on the eyes</span>
                     </div>
+                    <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
                 </div>
             </div>
-            <div class="section-label">Data Management</div>
-            <div class="settings-group">
-                <div class="settings-item" onclick="exportPDF()" style="cursor:pointer"><span>Export to PDF 📥</span></div>
-                <div class="settings-item" onclick="clearAllData()" style="cursor:pointer"><span style="color:var(--danger)">Clear All Data 🗑️</span></div>
+            <div class="settings-card danger-zone">
+                <div class="settings-item" onclick="clearAllData()">
+                    <span class="item-title" style="color:#ff7675">Clear All Data</span>
+                </div>
             </div>
         </div>
     </div>
 
-    <script src="app.js?v=10"></script>
-    <script src="settings.js?v=10"></script>
+    <script src="app.js"></script>
 </body>
 </html>
